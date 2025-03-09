@@ -8,7 +8,7 @@ namespace Task1.Repositories
 	{
 		Task<IEnumerable<Book>> GetAll();
 		Task<Book> GetBookById(int id);
-		Task Create(BookDto bookDto);
+		Task<BookDto> Create(BookDto bookDto);
 		Task<Book> UpdateBook(int id, BookDto bookDto);
 		Task<bool> DeleteBook(int id);
 	}

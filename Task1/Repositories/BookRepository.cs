@@ -14,21 +14,32 @@ namespace Task1.Repositories
         {
 			_dbContext = dbContext;   
         }
-        public async Task Create(BookDto bookDto)
+		public async Task<BookDto> Create(BookDto bookDto)
 		{
+			var author = await _dbContext.Authors.FindAsync(bookDto.AuthorId);
+			if (author == null)
+			{
+				throw new Exception("Author not found"); // 🔹 Throw an error instead of returning null
+			}
 
 			var book = new Book
-			{	
+			{
 				Title = bookDto.Title,
-				Author = bookDto.Author,
+				AuthorId = bookDto.AuthorId,
 				PublishedDate = bookDto.PublishedDate,
 			};
 
+			await _dbContext.Books.AddAsync(book);
+			await _dbContext.SaveChangesAsync(); // ✅ Ensure this runs correctly
 
-		     await _dbContext.Books.AddAsync(book);
-			_dbContext.SaveChangesAsync();
-		   
-			
+			// ✅ Return the saved book
+			return new BookDto
+			{
+				Id = book.Id,
+				Title = book.Title,
+				AuthorId = book.AuthorId,
+				PublishedDate = book.PublishedDate
+			};
 		}
 
 		public async Task<bool> DeleteBook(int id)
@@ -47,8 +58,11 @@ namespace Task1.Repositories
 
 		public async Task<IEnumerable<Book>> GetAll()
 		{
+			var books = await _dbContext.Books
+				.Include(b => b.Author) // ✅ Ensure Author data is included
+				.ToListAsync();
 
-			return await _dbContext.Books.ToListAsync();
+			return books;
 		}
 
 		public async Task<Book> GetBookById(int id)
@@ -67,7 +81,7 @@ namespace Task1.Repositories
 
 			var book = await _dbContext.Books.FirstOrDefaultAsync(i => i.Id == id);
 			book.Title = bookDto.Title;
-			book.Author = bookDto.Author;
+			book.Author.Id = bookDto.AuthorId;
 			book.PublishedDate = bookDto.PublishedDate;
 
 

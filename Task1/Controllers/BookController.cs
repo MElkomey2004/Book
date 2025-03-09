@@ -30,8 +30,13 @@ namespace Task1.Controllers
 
 		public async Task<IActionResult> Create(BookDto bookDto)
 		{
-			_bookRepository.Create(bookDto);
-			return Ok();
+			var book = await _bookRepository.Create(bookDto);
+
+			if (book == null)
+			{
+				return NotFound();
+			}
+			return Ok("The Book Will Added Successfully");
 		}
 
 		[HttpGet]
